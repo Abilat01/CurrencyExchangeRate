@@ -35,10 +35,7 @@ class Model: NSObject, XMLParserDelegate {
             return path
         }
         
-        Bundle.main.path(forResource: "data", ofType: "xml")
-        
-        print(path)
-        return path
+        return Bundle.main.path(forResource: "data", ofType: "xml")!
     }
     
     var urlForXML: URL {
@@ -49,24 +46,59 @@ class Model: NSObject, XMLParserDelegate {
     func loadXMLFile(data : Data) {
         
     }
+    
     //распарсить XML и положить его в currencies: [Currency], и отправить приложению уведомление что данные обновились
     func parseXML() {
+        
+        currencies = []
+        
         let parser = XMLParser(contentsOf: urlForXML)
         parser?.delegate = self
         parser?.parse()
+        print(currencies)
     }
     
     var currentCurency: Currency?
     
     func parser(_ parser: XMLParser, didStartElement elementName: String, namespaceURI: String?, qualifiedName qName: String?, attributes attributeDict: [String : String] = [:]) {
         
+        if elementName == "Valute" {
+            currentCurency = Currency()
+        }
+        
+    }
+    
+    var currentCharacters: String = ""
+    func parser(_ parser: XMLParser, foundCharacters string: String) {
+        currentCharacters = string
     }
     
     func parser(_ parser: XMLParser, didEndElement elementName: String, namespaceURI: String?, qualifiedName qName: String?) {
         
-    }
-    
-    func parser(_ parser: XMLParser, foundCharacters string: String) {
+        if elementName == "NumCode" {
+            currentCurency?.NumCode = currentCharacters
+        }
         
+        if elementName == "CharCode" {
+            currentCurency?.CharCode = currentCharacters
+        }
+        
+        if elementName == "Nominal" {
+            currentCurency?.Nominal = currentCharacters
+            currentCurency?.nominalDouble = Double(currentCharacters.replacingOccurrences(of: ",", with: "."))
+        }
+        
+        if elementName == "Name" {
+            currentCurency?.Name = currentCharacters
+        }
+        
+        if elementName == "Value" {
+            currentCurency?.Value = currentCharacters
+            currentCurency?.valueDoble = Double(currentCharacters.replacingOccurrences(of: ",", with: "."))
+        }
+        
+        if elementName == "Valute" {
+            currencies.append(currentCurency!)
+        }
     }
 }
